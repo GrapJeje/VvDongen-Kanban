@@ -15,21 +15,23 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    min-height: 100vh;
 
     position: relative;
 }
 
-body::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.4);
-    z-index: -1;
+header {
+    background-color: rgba(255, 255, 255, 0.24);
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 1rem 2rem;
+    box-sizing: border-box;
 }
 
-header {
-    background-color: #ffffff3d;
+.fake-header {
+    visibility: hidden;
     height: auto;
 }
 
@@ -54,6 +56,18 @@ header {
             &:hover {
                 background-color: #1b276e;
             }
+
+            &:disabled,
+            &[disabled] {
+                background-color: #1b276e;
+                cursor: not-allowed;
+                opacity: 0.7;
+                box-shadow: none;
+            }
         }
     }
 }
+
+@import "task/category";
+@import "task/card";
+

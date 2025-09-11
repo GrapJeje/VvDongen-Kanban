@@ -1,0 +1,39 @@
+.categories {
+    display: flex;
+    gap: 20px;
+    padding: 2rem;
+    align-items: flex-start;
+    overflow-x: auto;
+    height: 100vh;
+}
+
+.category {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    flex-shrink: 0;
+
+    &__container {
+        background-color: #1e1e1e;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        max-height: 80vh;
+    }
+
+    &__title {
+        color: white;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    &__tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+}

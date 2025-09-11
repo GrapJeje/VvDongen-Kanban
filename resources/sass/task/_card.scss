@@ -1,0 +1,44 @@
+.task-card {
+    background-color: #2b2b2b;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    &__title {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    &__person {
+        font-size: 12px;
+        color: #cfcfcf;
+    }
+
+    &__status {
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: capitalize;
+
+        &.todo { color: #f0ad4e; }
+        &.doing { color: #5bc0de; }
+        &.done { color: #5cb85c; }
+        &.rejected { color: #d9534f; }
+    }
+
+    &__timestamps {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        color: #999;
+    }
+}
