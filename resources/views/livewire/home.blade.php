@@ -30,11 +30,19 @@
         @if($viewMode === 'overview')
             <div class="categories">
                 @foreach(\App\Models\Category::all() as $category)
-                    @livewire('task.category', ['category' => $category], key($category->id))
+                    @livewire('task.category', ['category' => $category, 'viewMode' => $viewMode], key($category->id))
                 @endforeach
             </div>
         @else
-
+            <div class="categories">
+                @foreach(\App\Enums\TaskStatus::cases() as $status)
+                    @livewire('task.category', [
+                        'status' => $status->value,
+                        'viewMode' => $viewMode,
+                        'category' => null,
+                    ], key('status-'.$status->value))
+                @endforeach
+            </div>
         @endif
     </main>
 

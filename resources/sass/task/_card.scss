@@ -4,14 +4,12 @@
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     cursor: grab;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 
     &:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: white solid 2px;
     }
 
     &__title {
