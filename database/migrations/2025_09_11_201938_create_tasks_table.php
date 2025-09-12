@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('person')->nullable();
             $table->enum('status', ['todo', 'doing', 'done', 'rejected'])->default('todo');
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }

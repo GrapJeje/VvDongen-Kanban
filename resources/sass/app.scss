@@ -68,6 +68,12 @@ header {
     }
 }
 
+.dragging {
+    opacity: 0.5;
+    border: 2px dashed white;
+}
+
+
 @import "task/category";
 @import "task/card";
 
