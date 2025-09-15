@@ -10,26 +10,30 @@ use Illuminate\Database\Eloquent\Collection;
 class Category extends Component
 {
     public ?\App\Models\Category $category = null;
-    public ?string $status = null;
     public string $viewMode;
+    public ?string $status = null;
     public Collection $tasks;
 
     protected $listeners = ['taskMoved' => 'moveTask'];
 
-    public function mount()
+    public function mount($category = null, $status = null, $viewMode = 'overview')
     {
+        $this->category = $category;
+        $this->viewMode = $viewMode;
+        $this->status = $status;
         $this->loadTasks();
     }
 
     private function loadTasks()
     {
-        if ($this->status) {
-            $statusEnum = TaskStatus::from($this->status);
-            $this->tasks = Task::where('status', $statusEnum->value)
+        if ($this->viewMode === 'kanban' && $this->status) {
+            $this->tasks = Task::where('status', $this->status)
                 ->orderBy('order')
                 ->get();
-        } elseif ($this->category) {
-            $this->tasks = $this->category->tasks()->orderBy('order')->get();
+        } elseif ($this->viewMode === 'overview' && $this->category) {
+            $this->tasks = $this->category->tasks()
+                ->orderBy('order')
+                ->get();
         } else {
             $this->tasks = collect();
         }
@@ -41,51 +45,46 @@ class Category extends Component
         $target  = \App\Models\Category::find($targetId);
 
         if ($dragged && $target) {
-            $tempOrder = $dragged->order;
+            $temp = $dragged->order;
             $dragged->order = $target->order;
-            $target->order = $tempOrder;
+            $target->order = $temp;
 
             $dragged->save();
             $target->save();
         }
     }
 
-    public function moveTask($draggedId, $targetId = null, $newCategoryId = null)
+    public function moveTask($draggedId, $targetId = null, $newCategoryId = null, $newStatus = null)
     {
         $draggedTask = Task::find($draggedId);
         if (!$draggedTask) return;
 
         $targetTask = $targetId ? Task::find($targetId) : null;
 
-        // Update status if kanban view
-        if ($this->viewMode === 'kanban' && $this->status) {
-            $draggedTask->status = $this->status->value ?? $this->status;
+        if ($this->viewMode === 'kanban' && $newStatus) {
+            $draggedTask->status = $newStatus;
         }
 
-        // Update category if overview
-        if ($newCategoryId) {
+        if ($this->viewMode === 'overview' && $newCategoryId) {
             $draggedTask->categories()->sync([$newCategoryId]);
         }
 
-        // Order logic
         if ($targetTask) {
-            $draggedTask->order = $targetTask->order - 0.5; // tijdelijk ertussen
+            $draggedTask->order = $targetTask->order - 0.5;
             $draggedTask->save();
-            $this->reorderTasks($newCategoryId ?? $this->category?->id);
-        } else {
-            $draggedTask->save();
-        }
+            $this->reorderTasks($newCategoryId ?? $this->category?->id, $newStatus);
+        } else $draggedTask->save();
 
         $this->loadTasks();
     }
 
-    private function reorderTasks($categoryId = null)
+    private function reorderTasks($categoryId = null, $status = null)
     {
         $query = Task::query();
 
-        if ($this->viewMode === 'kanban' && $this->status) {
-            $query->where('status', $this->status->value ?? $this->status);
-        } elseif ($categoryId) {
+        if ($this->viewMode === 'kanban' && $status) {
+            $query->where('status', $status);
+        } elseif ($this->viewMode === 'overview' && $categoryId) {
             $query->whereHas('categories', fn($q) => $q->where('categories.id', $categoryId));
         }
 
@@ -100,9 +99,9 @@ class Category extends Component
     {
         return view('livewire.task.category', [
             'category' => $this->category,
-            'status' => $this->status ? TaskStatus::from($this->status) : null,
-            'viewMode' => $this->viewMode,
             'tasks' => $this->tasks,
+            'viewMode' => $this->viewMode,
+            'status' => $this->status,
         ]);
     }
 }

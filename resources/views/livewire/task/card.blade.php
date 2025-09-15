@@ -9,7 +9,8 @@
             Livewire.dispatch('taskMoved', [
                 $event.dataTransfer.getData('taskId'),
                 id,
-                {{ $category->id ?? 'null' }}
+                {{ $category->id ?? 'null' }},
+                '{{ $card->status }}'
             ]);
         }
      "
