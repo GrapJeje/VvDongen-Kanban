@@ -29,7 +29,7 @@
     <main>
         @if($viewMode === 'overview')
             <div class="categories">
-                @foreach(\App\Models\Category::all() as $category)
+                @foreach(\App\Models\Category::orderBy('order')->get() as $category)
                     @livewire('task.category', ['category' => $category, 'viewMode' => $viewMode], key($category->id))
                 @endforeach
             </div>

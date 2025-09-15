@@ -3,23 +3,35 @@
 namespace App\Livewire\Task;
 
 use App\Enums\TaskStatus;
-use Livewire\Component;
 use App\Models\Task;
+use Livewire\Component;
+use Illuminate\Database\Eloquent\Collection;
 
 class Category extends Component
 {
     public ?\App\Models\Category $category = null;
     public ?string $status = null;
     public string $viewMode;
-    public array $tasks = [];
+    public Collection $tasks;
+
+    protected $listeners = ['taskMoved' => 'moveTask'];
 
     public function mount()
     {
+        $this->loadTasks();
+    }
+
+    private function loadTasks()
+    {
         if ($this->status) {
             $statusEnum = TaskStatus::from($this->status);
-            $this->tasks = Task::where('status', $statusEnum->value)->get()->toArray();
+            $this->tasks = Task::where('status', $statusEnum->value)
+                ->orderBy('order')
+                ->get();
         } elseif ($this->category) {
-            $this->tasks = $this->category->tasks->toArray();
+            $this->tasks = $this->category->tasks()->orderBy('order')->get();
+        } else {
+            $this->tasks = collect();
         }
     }
 
@@ -38,22 +50,49 @@ class Category extends Component
         }
     }
 
-    public function moveTask($draggedId, $targetId, $newCategoryId = null)
+    public function moveTask($draggedId, $targetId = null, $newCategoryId = null)
     {
         $draggedTask = Task::find($draggedId);
-        $targetTask  = Task::find($targetId);
+        if (!$draggedTask) return;
 
-        if (!$draggedTask || !$targetTask) return;
+        $targetTask = $targetId ? Task::find($targetId) : null;
 
-        if ($newCategoryId && $draggedTask->categories()->first()->id !== $newCategoryId) {
-            $draggedTask->categories()->detach($draggedTask->categories()->first());
-            $draggedTask->categories()->attach($newCategoryId, ['order' => $targetTask->order]);
-        } else {
-            $tempOrder = $draggedTask->order;
-            $draggedTask->order = $targetTask->order;
-            $targetTask->order = $tempOrder;
+        // Update status if kanban view
+        if ($this->viewMode === 'kanban' && $this->status) {
+            $draggedTask->status = $this->status->value ?? $this->status;
+        }
+
+        // Update category if overview
+        if ($newCategoryId) {
+            $draggedTask->categories()->sync([$newCategoryId]);
+        }
+
+        // Order logic
+        if ($targetTask) {
+            $draggedTask->order = $targetTask->order - 0.5; // tijdelijk ertussen
             $draggedTask->save();
-            $targetTask->save();
+            $this->reorderTasks($newCategoryId ?? $this->category?->id);
+        } else {
+            $draggedTask->save();
+        }
+
+        $this->loadTasks();
+    }
+
+    private function reorderTasks($categoryId = null)
+    {
+        $query = Task::query();
+
+        if ($this->viewMode === 'kanban' && $this->status) {
+            $query->where('status', $this->status->value ?? $this->status);
+        } elseif ($categoryId) {
+            $query->whereHas('categories', fn($q) => $q->where('categories.id', $categoryId));
+        }
+
+        $tasks = $query->orderBy('order')->get();
+        foreach ($tasks as $i => $task) {
+            $task->order = $i + 1;
+            $task->save();
         }
     }
 
@@ -61,9 +100,9 @@ class Category extends Component
     {
         return view('livewire.task.category', [
             'category' => $this->category,
-            'status'   => $this->status ? TaskStatus::from($this->status) : null,
+            'status' => $this->status ? TaskStatus::from($this->status) : null,
             'viewMode' => $this->viewMode,
-            'tasks'    => $this->tasks,
+            'tasks' => $this->tasks,
         ]);
     }
 }

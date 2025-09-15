@@ -70,9 +70,43 @@ header {
 
 .dragging {
     opacity: 0.5;
-    border: 2px dashed white;
+    border: 2px dashed #4cafef;
+    background: rgba(76, 175, 239, 0.1);
 }
 
+.dropzone {
+    border: 2px dashed transparent;
+    min-height: 60px;
+    transition: background 0.2s, border-color 0.2s;
+    padding: 5px;
+    border-radius: 6px;
+}
+
+.dropzone.hover {
+    border-color: #4cafef;
+    background: rgba(76, 175, 239, 0.05);
+}
+
+.task-card {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    cursor: grab;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card.dragging {
+    box-shadow: 0 0 10px rgba(76, 175, 239, 0.5);
+}
+
+.task-card__status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    margin-top: 4px;
+}
 
 @import "task/category";
 @import "task/card";

@@ -16,25 +16,6 @@ class Card extends Component
         $this->viewMode = $viewMode;
     }
 
-    public function moveTask($draggedId, $targetId, $newCategoryId = null)
-    {
-        $draggedTask = Task::find($draggedId);
-        $targetTask  = Task::find($targetId);
-
-        if (!$draggedTask || !$targetTask) return;
-
-        if ($newCategoryId && $draggedTask->categories()->first()->id !== $newCategoryId) {
-            $draggedTask->categories()->detach($draggedTask->categories()->first());
-            $draggedTask->categories()->attach($newCategoryId, ['order' => $targetTask->order]);
-        } else {
-            $tempOrder = $draggedTask->order;
-            $draggedTask->order = $targetTask->order;
-            $targetTask->order = $tempOrder;
-            $draggedTask->save();
-            $targetTask->save();
-        }
-    }
-
     public function render()
     {
         return view('livewire.task.card', [

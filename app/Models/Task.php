@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Task extends Model
 {
-    protected $fillable = ['title', 'status', 'person'];
+    protected $fillable = ['title', 'status', 'person', 'order'];
 
     public function labels()
     {

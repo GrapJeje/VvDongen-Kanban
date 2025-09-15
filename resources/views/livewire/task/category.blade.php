@@ -1,40 +1,36 @@
-@if($viewMode === 'overview')
-    <div
-        class="category"
-        x-data="{ id: {{ $category->id }} }"
-        draggable="true"
-        @dragstart="dragSrcEl = $el; $el.classList.add('dragging')"
-        @dragend="$el.classList.remove('dragging')"
-        @dragover.prevent
-        @drop="
-                if(dragSrcEl !== $el){
-                    $wire.call('reorderCategory', dragSrcEl.dataset.id, $el.dataset.id)
-                }
-            "
-        data-id="{{ $category->id }}"
-    >
-        @else
-            <div class="category">
-                @endif
-                <div class="category__container">
-                    @if($viewMode === 'overview')
-                        <h2 class="category__title">{{ $category->name }}</h2>
-                    @else
-                        <h2 class="category__title">{{ ucfirst($status->value ?? $status) }}</h2>
-                    @endif
+<div
+    class="category"
+    x-data="{ id: {{ $category->id ?? 'null' }} }"
+    draggable="{{ $viewMode === 'overview' ? 'true' : 'false' }}"
+    @dragstart="if($el.draggable){ $event.dataTransfer.setData('categoryId', id); $el.classList.add('dragging') }"
+    @dragend="$el.classList.remove('dragging')"
+    @dragover.prevent="$el.classList.add('hover')"
+    @dragleave="$el.classList.remove('hover')"
+    @drop="
+        $el.classList.remove('hover');
+        Livewire.dispatch('taskMoved', [
+            $event.dataTransfer.getData('taskId'),
+            null,
+            {{ $category->id ?? 'null' }}
+        ]);
+    "
+    data-id="{{ $category->id ?? 'null' }}"
+>
+    <div class="category__container">
+        <h2 class="category__title">
+            {{ $viewMode === 'overview' ? $category->name : ucfirst($status->value ?? $status) }}
+        </h2>
 
-                        <div class="category__tasks"
-                             @dragover.prevent
-                             @drop="dragSrcEl && $wire.call('moveTask', dragSrcEl.dataset.id, $el.dataset.id, {{ $category->id ?? 'null' }})">
-                        @if($viewMode === 'overview')
-                            @foreach($category->tasks as $task)
-                                @livewire('task.card', ['task' => $task, 'viewMode' => $viewMode], key($task->id))
-                            @endforeach
-                        @else
-                            @foreach($tasks as $task)
-                                @livewire('task.card', ['task' => $task, 'viewMode' => $viewMode], key($task['id']))
-                            @endforeach
-                        @endif
-                    </div>
-                </div>
-            </div>
+        <div class="category__tasks dropzone"
+             @dragover.prevent="$el.classList.add('hover')"
+             @dragleave="$el.classList.remove('hover')"
+             @drop="
+                 $el.classList.remove('hover');
+                 $wire.call('moveTask', $event.dataTransfer.getData('taskId'), null, {{ $category->id ?? 'null' }});
+             ">
+            @foreach($tasks as $task)
+                @livewire('task.card', ['task' => $task, 'viewMode' => $viewMode], key('task-'.$task->id))
+            @endforeach
+        </div>
+    </div>
+</div>
